@@ -203,10 +203,14 @@ return false
   end
 end
 
+def e_sn(arr)
+  return arr
+end
+
 if __FILE__ == $PROGRAM_NAME
   require "stringio"
-  line = ENV['TM_CURRENT_LINE']
-  caret_placement =ENV['TM_LINE_INDEX'].to_i - 1
+  line = "aaa bb]"
+  caret_placement = 6
 
   up = 0
   pat = /"(?:\\.|[^"\\])*"|\[|\]/
@@ -220,12 +224,12 @@ if __FILE__ == $PROGRAM_NAME
      end
   if caret_placement ==-1
     print "]$0" + e_sn(line[caret_placement+1..-1])
-    TextMate.exit_insert_snippet
+    print "TextMate.exit_insert_snippet"
   end
 
   if  up != 0 
     print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
-    TextMate.exit_insert_snippet
+    print "TextMate.exit_insert_snippet"
   end
   
   to_parse = StringIO.new(line[0..caret_placement])
