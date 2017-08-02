@@ -224,12 +224,12 @@ if __FILE__ == $PROGRAM_NAME
      end
   if caret_placement ==-1
     print "]$0" + e_sn(line[caret_placement+1..-1])
-    print "TextMate.exit_insert_snippet"
+    print " <TextMate.exit_insert_snippet1> "
   end
 
   if  up != 0 
     print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
-    print "TextMate.exit_insert_snippet"
+    print " <TextMate.exit_insert_snippet2> "
   end
   
   to_parse = StringIO.new(line[0..caret_placement])
