@@ -80,31 +80,32 @@ end
 
 
 class ObjcParser
-	
-	attr_reader :list
+    
+    attr_reader :list
   def initialize(args)
     @list = args
   end
   
   def get_position
     return nil,nil if @list.empty?
-	has_message = true
+    has_message = true
 
     a = @list.pop
     endings = [:close,:post_op,:at_string,:at_selector,:identifier]
-openings = [:open,:return,:control]
+    openings = [:open,:return,:control]
+
     if a.tt == :identifier && !@list.empty? && endings.include?(@list[-1].tt)
       insert_point = find_object_start
     else
       @list << a
-	has_message = false unless methodList
+    has_message = false unless methodList
       insert_point = find_object_start
     end
-return insert_point, has_message
+    return insert_point, has_message
   end
   
   def methodList
-    	old = Array.new(@list)
+        old = Array.new(@list)
 
     a = selector_loop(@list)
     if !a.nil? && a.tt == :selector
@@ -123,7 +124,7 @@ return insert_point, has_message
           end
         end
       end
-	else
+    else
     end
 @list = old
 return false
@@ -209,8 +210,11 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   require "stringio"
-  line = "aaa bb]"
-  caret_placement = 6
+  #line = "aaa bb"
+  #caret_placement = 6
+  #
+  line = "[bb cc]; [aaa bb] cc"
+  caret_placement = 19
 
   up = 0
   pat = /"(?:\\.|[^"\\])*"|\[|\]/
@@ -224,15 +228,17 @@ if __FILE__ == $PROGRAM_NAME
      end
   if caret_placement ==-1
     print "]$0" + e_sn(line[caret_placement+1..-1])
-    print " <TextMate.exit_insert_snippet1> "
+    print " <TextMate.exit_insert_snippet1> \n"
   end
 
   if  up != 0 
     print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
-    print " <TextMate.exit_insert_snippet2> "
+    print " <TextMate.exit_insert_snippet2> \n"
   end
   
   to_parse = StringIO.new(line[0..caret_placement])
+  
+  print "to_parse: " + line[0..caret_placement] + "\n"
   lexer = Lexer.new do |l|
     l.add_token(:return,  /\breturn\b/)
     l.add_token(:nil, /\bnil\b/)
@@ -269,14 +275,19 @@ if __FILE__ == $PROGRAM_NAME
     TextMate.exit_insert_snippet
   end
   
+  print "tokenList: " + tokenList.join(",") + "\n"
+
   par = ObjcParser.new(tokenList)
   b, has_message = par.get_position
 
+  #print "b: " + b
+  #b should be nil, because no method should be inserted
+
   if !line[caret_placement+1].nil? && line[caret_placement+1].chr == "]"
     if b.nil? || par.list.empty? || par.list[-1].text == "["
-			print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+2..-1])
-    	TextMate.exit_insert_snippet
-		end
+            print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+2..-1])
+        TextMate.exit_insert_snippet
+        end
   end
 
   if b.nil?
@@ -287,6 +298,7 @@ if __FILE__ == $PROGRAM_NAME
     print "[" +e_sn(line[b..caret_placement]) + ins +e_sn(line[caret_placement+1..-1])
   elsif b < caret_placement    
     print e_sn(line[0..b-1]) unless b == 0
+    puts "b: ", b
     print "[" +e_sn(line[b..caret_placement]) +"]$0"+e_sn(line[caret_placement+1..-1]) 
   else
     print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
