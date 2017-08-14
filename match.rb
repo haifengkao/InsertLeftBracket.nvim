@@ -131,17 +131,20 @@ return false
   end
   
   def file_contains_selector?(methodName)
-    fileNames = ["#{ENV['TM_BUNDLE_SUPPORT']}/CocoaMethods.txt.gz"]
-    userMethods = "#{ENV['TM_PROJECT_DIRECTORY']}/.methods.TM_Completions.txt.gz"
+    return false
 
-    fileNames += [userMethods] if File.exists? userMethods
-    candidates = []
-    fileNames.each do |fileName|
-      zGrepped = %x{zgrep ^#{e_sh methodName }[[:space:]] #{e_sh fileName }}
-      candidates += zGrepped.split("\n")
-    end
+    # unimplemented
+    #fileNames = ["#{ENV['TM_BUNDLE_SUPPORT']}/CocoaMethods.txt.gz"]
+    #userMethods = "#{ENV['TM_PROJECT_DIRECTORY']}/.methods.TM_Completions.txt.gz"
 
-    return !candidates.empty?
+    #fileNames += [userMethods] if File.exists? userMethods
+    #candidates = []
+    #fileNames.each do |fileName|
+      #zGrepped = %x{zgrep ^#{e_sh methodName }[[:space:]] #{e_sh fileName }}
+      #candidates += zGrepped.split("\n")
+    #end
+
+    #return !candidates.empty?
   end
   
   def selector_loop(l)
@@ -205,7 +208,116 @@ return false
 end
 
 def e_sn(arr)
-  return arr
+  if arr
+    return arr
+  else 
+    return ""
+  end
+end
+
+# given a buffer and current cursor position, return the complete line of code
+# based on ";" and indent (if the method call includes a block, ";" will fail)
+
+class BracketAdder
+  A = Struct.new(:tt, :text, :beg)
+
+  def initialize
+  end
+
+  # given a string, add right bracket at cursor position and the corresponding left bracket if it is missing
+  def addMissingBracket(line, caret_placement)
+    res = line
+
+    up = 0
+    pat = /"(?:\\.|[^"\\])*"|\[|\]/
+      line.scan(pat).each do |item|
+         case item
+         when "["
+           up+=1
+         when "]"
+           up -=1
+         end
+       end
+    if caret_placement ==-1
+      res = "]$0" + e_sn(line[caret_placement+1..-1])
+      return res
+    end
+
+    if up != 0 
+      res = e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
+      return res
+    end
+    
+    to_parse = StringIO.new(line[0..caret_placement])
+    
+    print "to_parse: " + line[0..caret_placement] + "\n"
+    lexer = Lexer.new do |l|
+      l.add_token(:return,  /\breturn\b/)
+      l.add_token(:nil, /\bnil\b/)
+      l.add_token(:control, /\b(?:if|while|for|do)(?:\s*)\(/)# /\bif|while|for|do(?:\s*)\(/)
+      l.add_token(:at_string, /"(?:\\.|[^"\\])*"/)
+      l.add_token(:selector, /\b[A-Za-z_0-9]+:/)
+      l.add_token(:identifier, /\b[A-Za-z_0-9]+\b/)
+      l.add_token(:bind, /(?:->)|\./)
+      l.add_token(:post_op, /\+\+|\-\-/)
+      l.add_token(:at, /@/)
+      l.add_token(:star, /\*/)
+      l.add_token(:close, /\)|\]|\}/)
+      l.add_token(:open, /\(|\[|\{/)
+      l.add_token(:operator,   /[&-+\/=%!:\,\?;<>\|\~\^]/)
+
+      l.add_token(:terminator, /;\n*|\n+/)
+      l.add_token(:whitespace, /\s+/)
+      l.add_token(:unknown,    /./) 
+      
+      l.input { to_parse.gets }
+    end
+
+    offset = 0
+    tokenList = []
+
+    lexer.each do |token| 
+      tokenList << A.new(*(token<<offset)) unless [:whitespace,:terminator].include? token[0]
+      offset +=token[1].length
+    end
+    if tokenList.empty?
+      res = e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
+      return res
+    end
+    
+    print "tokenList: " + tokenList.join(",") + "\n"
+
+    par = ObjcParser.new(tokenList)
+    b, has_message = par.get_position
+
+    #print "b: " + b
+    #b should be nil, because no method should be inserted
+
+    if !line[caret_placement+1].nil? && line[caret_placement+1].chr == "]"
+      if b.nil? || par.list.empty? || par.list[-1].text == "["
+          res = e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+2..-1])
+          return res
+      end
+    end
+
+    if b.nil?
+      res = e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
+    elsif !has_message && (b < caret_placement )
+      res = e_sn(line[0..b-1]) unless b == 0
+      ins = (/\s/ =~ line[caret_placement].chr ? "$0]" : " $0]")
+      res += "[" +e_sn(line[b..caret_placement]) + ins +e_sn(line[caret_placement+1..-1])
+    elsif b < caret_placement    
+      if b == 0
+        res = ""
+      else
+        res = e_sn(line[0..b-1]) unless b == 0
+      end
+      res += "[" +e_sn(line[b..caret_placement]) +"]$0"+e_sn(line[caret_placement+1..-1]) 
+    else
+      res = e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
+    end
+    return res
+  end
 end
 
 if __FILE__ == $PROGRAM_NAME
@@ -216,91 +328,19 @@ if __FILE__ == $PROGRAM_NAME
   line = "[bb cc]; [aaa bb] cc"
   caret_placement = 19
 
-  up = 0
-  pat = /"(?:\\.|[^"\\])*"|\[|\]/
-    line.scan(pat).each do |item|
-       case item
-       when "["
-         up+=1
-       when "]"
-         up -=1
-       end
-     end
-  if caret_placement ==-1
-    print "]$0" + e_sn(line[caret_placement+1..-1])
-    print " <TextMate.exit_insert_snippet1> \n"
-  end
+  adder = BracketAdder.new
+  puts adder.addMissingBracket(line, caret_placement)
 
-  if  up != 0 
-    print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
-    print " <TextMate.exit_insert_snippet2> \n"
-  end
-  
-  to_parse = StringIO.new(line[0..caret_placement])
-  
-  print "to_parse: " + line[0..caret_placement] + "\n"
-  lexer = Lexer.new do |l|
-    l.add_token(:return,  /\breturn\b/)
-    l.add_token(:nil, /\bnil\b/)
-    l.add_token(:control, /\b(?:if|while|for|do)(?:\s*)\(/)# /\bif|while|for|do(?:\s*)\(/)
-    l.add_token(:at_string, /"(?:\\.|[^"\\])*"/)
-    l.add_token(:selector, /\b[A-Za-z_0-9]+:/)
-    l.add_token(:identifier, /\b[A-Za-z_0-9]+\b/)
-    l.add_token(:bind, /(?:->)|\./)
-    l.add_token(:post_op, /\+\+|\-\-/)
-    l.add_token(:at, /@/)
-    l.add_token(:star, /\*/)
-    l.add_token(:close, /\)|\]|\}/)
-    l.add_token(:open, /\(|\[|\{/)
-    l.add_token(:operator,   /[&-+\/=%!:\,\?;<>\|\~\^]/)
+  line = "aaa bb"
+  caret_placement = 6
+  puts adder.addMissingBracket(line, caret_placement)
 
-    l.add_token(:terminator, /;\n*|\n+/)
-    l.add_token(:whitespace, /\s+/)
-    l.add_token(:unknown,    /./) 
-    
-    l.input { to_parse.gets }
-    #l.input {STDIN.read}
-  end
+  line = "[aaa bb"
+  caret_placement = 6
+  puts adder.addMissingBracket(line, caret_placement)
 
-  offset = 0
-  tokenList = []
-  A = Struct.new(:tt, :text, :beg)
+  line = "aaa block:^{\nreturn [cc dd];\n}"
+  caret_placement = 31
+  puts adder.addMissingBracket(line, caret_placement)
 
-  lexer.each do |token| 
-    tokenList << A.new(*(token<<offset)) unless [:whitespace,:terminator].include? token[0]
-    offset +=token[1].length
-  end
-  if tokenList.empty?
-    print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
-    TextMate.exit_insert_snippet
-  end
-  
-  print "tokenList: " + tokenList.join(",") + "\n"
-
-  par = ObjcParser.new(tokenList)
-  b, has_message = par.get_position
-
-  #print "b: " + b
-  #b should be nil, because no method should be inserted
-
-  if !line[caret_placement+1].nil? && line[caret_placement+1].chr == "]"
-    if b.nil? || par.list.empty? || par.list[-1].text == "["
-            print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+2..-1])
-        TextMate.exit_insert_snippet
-        end
-  end
-
-  if b.nil?
-    print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
-  elsif !has_message && (b < caret_placement )
-    print e_sn(line[0..b-1]) unless b == 0
-    ins = (/\s/ =~ line[caret_placement].chr ? "$0]" : " $0]")
-    print "[" +e_sn(line[b..caret_placement]) + ins +e_sn(line[caret_placement+1..-1])
-  elsif b < caret_placement    
-    print e_sn(line[0..b-1]) unless b == 0
-    puts "b: ", b
-    print "[" +e_sn(line[b..caret_placement]) +"]$0"+e_sn(line[caret_placement+1..-1]) 
-  else
-    print e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
-  end
 end
