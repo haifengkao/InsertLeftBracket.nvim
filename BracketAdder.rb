@@ -225,7 +225,7 @@ class BracketAdder
   end
 
   # given a string, add right bracket at cursor position and the corresponding left bracket if it is missing
-  def addMissingBracket(line, caret_placement)
+  def add_missing_bracket(line, caret_placement)
     res = line
 
     up = 0
@@ -329,18 +329,23 @@ if __FILE__ == $PROGRAM_NAME
   caret_placement = 19
 
   adder = BracketAdder.new
-  puts adder.addMissingBracket(line, caret_placement)
+  puts adder.add_missing_bracket(line, caret_placement)
 
   line = "aaa bb"
   caret_placement = 6
-  puts adder.addMissingBracket(line, caret_placement)
+  puts adder.add_missing_bracket(line, caret_placement)
 
   line = "[aaa bb"
   caret_placement = 6
-  puts adder.addMissingBracket(line, caret_placement)
+  puts adder.add_missing_bracket(line, caret_placement)
 
   line = "aaa block:^{\nreturn [cc dd];\n}"
   caret_placement = 31
-  puts adder.addMissingBracket(line, caret_placement)
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "[cc dd]; aa bb; ee ff"
+  caret_placement = 13
+  puts adder.add_missing_bracket(line, caret_placement)
+
 
 end
