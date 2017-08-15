@@ -1,9 +1,5 @@
-#require "neovim"
-#client = Neovim.attach_unix("/tmp/nvim.sock")
-    #buffer = client.get_current_buf
 
 class CompleteLine
-
 
   # buffer a neovim buffer object
   # current_line_number  the current line number (1-index)
@@ -102,4 +98,5 @@ if __FILE__ == $PROGRAM_NAME
   line_number = 4
   res = complete.get_complete_line(buffer, line_number, 5)
   raise String(res) unless res == [["{aa ;}bb", "cc dd;"], 0]
+
 end

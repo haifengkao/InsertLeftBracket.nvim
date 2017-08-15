@@ -250,7 +250,6 @@ class BracketAdder
     
     to_parse = StringIO.new(line[0..caret_placement])
     
-    print "to_parse: " + line[0..caret_placement] + "\n"
     lexer = Lexer.new do |l|
       l.add_token(:return,  /\breturn\b/)
       l.add_token(:nil, /\bnil\b/)
@@ -284,8 +283,6 @@ class BracketAdder
       res = e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
       return res
     end
-    
-    print "tokenList: " + tokenList.join(",") + "\n"
 
     par = ObjcParser.new(tokenList)
     b, has_message = par.get_position
@@ -322,13 +319,16 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   require "stringio"
+  adder = BracketAdder.new
+
   #line = "aaa bb"
   #caret_placement = 6
-  #
+  line = "aa bb;"
+  caret_placement = 4
+  puts adder.add_missing_bracket(line, caret_placement)
+  
   line = "[bb cc]; [aaa bb] cc"
   caret_placement = 19
-
-  adder = BracketAdder.new
   puts adder.add_missing_bracket(line, caret_placement)
 
   line = "aaa bb"
@@ -347,5 +347,8 @@ if __FILE__ == $PROGRAM_NAME
   caret_placement = 13
   puts adder.add_missing_bracket(line, caret_placement)
 
+  line = "{aa ;}bb\ncc dd;"
+  caret_placement = 8
+  puts adder.add_missing_bracket(line, caret_placement)
 
 end
