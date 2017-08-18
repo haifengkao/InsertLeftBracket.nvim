@@ -101,6 +101,7 @@ class ObjcParser
     has_message = false unless methodList
       insert_point = find_object_start
     end
+
     return insert_point, has_message
   end
   
@@ -126,8 +127,9 @@ class ObjcParser
       end
     else
     end
-@list = old
-return false
+
+    @list = old
+    return false
   end
   
   def file_contains_selector?(methodName)
@@ -321,8 +323,8 @@ if __FILE__ == $PROGRAM_NAME
   require "stringio"
   adder = BracketAdder.new
 
-  #line = "aaa bb"
-  #caret_placement = 6
+  line = "aaa bb"
+  caret_placement = 6
   line = "aa bb;"
   caret_placement = 4
   puts adder.add_missing_bracket(line, caret_placement)
@@ -348,6 +350,22 @@ if __FILE__ == $PROGRAM_NAME
   puts adder.add_missing_bracket(line, caret_placement)
 
   line = "{aa ;}bb\ncc dd;"
+  caret_placement = 8
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "a b:^(){ \n  if (a)  \n  ;\n}"
+  caret_placement = 27
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "[a b:^(){ \n  if (a)  \n  ;\n}"
+  caret_placement = 27
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "[a b:^(){ \n  if (a)  \n  ;\n}]"
+  caret_placement = 27
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "if (a b)"
   caret_placement = 8
   puts adder.add_missing_bracket(line, caret_placement)
 
