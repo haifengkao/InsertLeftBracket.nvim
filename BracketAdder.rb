@@ -226,7 +226,7 @@ class BracketAdder
 
   # given a string, add right bracket at cursor position and the corresponding left bracket if it is missing
   def add_missing_bracket(line, caret_placement)
-    res = line
+    res = ""
 
     up = 0
     pat = /"(?:\\.|[^"\\])*"|\[|\]/
