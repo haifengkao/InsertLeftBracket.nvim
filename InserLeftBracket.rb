@@ -42,9 +42,9 @@ class InsertLeftBracket
     # "\n" in each line before the last line
     caret_in_single_line = @lines[0..-2].map { |str| str.length }.reduce(0,:+) + @caret +  @lines.length - 1 
 
-    # make sure the cursor stays in the line
+    # make sure the cursor stays in the line (including the boundary)
     # otherwise BracketAdder will crash
-    caret_in_single_line = [caret_in_single_line, line.length - 1].min
+    caret_in_single_line = [caret_in_single_line, line.length].min
 
     return adder.add_missing_bracket(line, caret_in_single_line)
   end
