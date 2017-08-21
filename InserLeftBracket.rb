@@ -54,16 +54,22 @@ class InsertLeftBracket
   def apply_inserted_line()
     inserted_lines = self.get_inserted_line
 
-    return unless inserted_lines
+    # return original caret
+    return @caret unless inserted_lines
 
     modified_lines = inserted_lines.split("\n")
+
+    if @modified_begin_location.x > 0
+      first_line = @buffer[@modified_begin_location.y]
+      modified_lines[0] =  first_line[0..@modified_begin_location.x - 1] + modified_lines[0]
+    end
 
     # find and remove $0 (the caret after insertion)
     last_line = modified_lines[-1]
 
     match = last_line.match(/\$0/)
 
-    return unless match # something is wrong
+    return @caret unless match # something is wrong
 
     index = match.begin(0)
 
