@@ -398,4 +398,8 @@ if __FILE__ == $PROGRAM_NAME
   caret_placement = 5
   puts adder.add_missing_bracket(line, caret_placement)
 
+  line = "return a b"
+  caret_placement = 10
+  puts adder.add_missing_bracket(line, caret_placement)
+
 end

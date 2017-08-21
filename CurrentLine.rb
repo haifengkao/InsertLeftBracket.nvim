@@ -99,4 +99,14 @@ if __FILE__ == $PROGRAM_NAME
   res = complete.get_complete_line(buffer, line_number, 5)
   raise String(res) unless res == [["{aa ;}bb", "cc dd;"], 0]
 
+  buffer = [0, "; a b "]
+  line_number = 1
+  res = complete.get_complete_line(buffer, line_number, 5)
+  raise String(res) unless res == [[" a b "], 1]
+
+  buffer = [0, "[a b:^(){ return c d "]
+  line_number = 1
+  res = complete.get_complete_line(buffer, line_number, 21)
+  raise String(res) unless res == [[" return c d "], 9]
+
 end
