@@ -326,10 +326,28 @@ if __FILE__ == $PROGRAM_NAME
   require "stringio"
   adder = BracketAdder.new
 
-  line = "aaa bb"
-  caret_placement = 6
+  line = "aa bb;"
+  caret_placement = 0
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "aa bb;"
+  caret_placement = 1
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "aa bb;"
+  caret_placement = 2
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "aa bb;"
+  caret_placement = 3
+  puts adder.add_missing_bracket(line, caret_placement)
+
   line = "aa bb;"
   caret_placement = 4
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "aa bb"
+  caret_placement = 5
   puts adder.add_missing_bracket(line, caret_placement)
   
   line = "[bb cc]; [aaa bb] cc"
@@ -369,7 +387,15 @@ if __FILE__ == $PROGRAM_NAME
   puts adder.add_missing_bracket(line, caret_placement)
 
   line = "if (a b)"
-  caret_placement = 8
+  caret_placement = 7
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "if"
+  caret_placement = 0
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "; a b"
+  caret_placement = 5
   puts adder.add_missing_bracket(line, caret_placement)
 
 end
