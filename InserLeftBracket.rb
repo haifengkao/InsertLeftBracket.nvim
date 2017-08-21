@@ -1,8 +1,11 @@
 #require "neovim"
 #client = Neovim.attach_unix("/tmp/nvim.sock")
-    #buffer = client.get_current_buf
+#buffer = client.get_current_buf
 require "./CurrentLine.rb"
 require "./BracketAdder.rb"
+
+require "neovim"
+client = Neovim.attach_unix("/tmp/nvim.sock")
 
 class Point
 
@@ -92,6 +95,9 @@ end
 
 if __FILE__ == $PROGRAM_NAME
 
+  # SETUP: start nvim in another terminal by "NVIM_LISTEN_ADDRESS=/tmp/nvim.sock nvim"
+  # then run this script to test
+ 
   # nvim buffer is 1-index
   buffer = [0, "aa bb;"]
   caret = 4
@@ -108,5 +114,24 @@ if __FILE__ == $PROGRAM_NAME
   insert = InsertLeftBracket.new(buffer, buffer.length - 1, caret)
   puts insert.apply_inserted_line()
   puts insert.buffer
+
+  #buffer = [0, "; a b"]
+  #caret = 5
+  #insert = InsertLeftBracket.new(buffer, buffer.length - 1, caret)
+  #puts insert.apply_inserted_line()
+  #puts insert.buffer
+
+  buffer = client.get_current_buf
+  caret = client.get_current_line
+  window = client.get_current_win
+  y, x = window.cursor
+  line_num = buffer.line_number
+  puts "cursor", [y, x]
+  puts "totoal line",line_num
+  insert = InsertLeftBracket.new(buffer, line_num, x)
+  puts buffer.lines
+  new_x = insert.apply_inserted_line()
+  window.cursor = [y, new_x]
+  puts insert.buffer[0]
 
 end
