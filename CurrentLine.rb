@@ -24,8 +24,8 @@ class CompleteLine
           next
         end
         if state == :INITIAL_STATE
-          if val == ';'
-            # we find the complete line
+          if val == ';' or val == '{'
+            # we find the complete line after ';' or inside {}
             state = :END_STATE 
             partial_line = line[ind+1..-1]
             break
