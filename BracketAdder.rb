@@ -230,6 +230,9 @@ class BracketAdder
   def add_missing_bracket(line, caret_placement)
     res = ""
 
+    #this method begins from -1 (the cursor position at the left of the first char)
+    caret_placement = caret_placement - 1
+
     up = 0
     pat = /"(?:\\.|[^"\\])*"|\[|\]/
       line.scan(pat).each do |item|
