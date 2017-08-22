@@ -1,5 +1,6 @@
 # InsertLeftBracket.nvim
 
+It offers objective-c square bracket completion, e.g.
 `foo bar` -> `[foo bar]`
 
 ## Prerequites
@@ -29,7 +30,7 @@ path.
 
 ## Acknowledgement
 
-The parsing code in ported from [textmate objective-c bundle][3]
+The parsing code is ported from [TextMate objective-c bundle][3]
 
 [1]: https://neovim.io
 [2]: https://github.com/alexgenco/neovim-ruby
