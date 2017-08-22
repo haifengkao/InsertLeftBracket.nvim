@@ -1,8 +1,7 @@
 require_relative "sources/LeftBracketAdder.rb"
 
 Neovim.plugin do |plug|
-  # Define a function called "Sum" which adds two numbers. This function is
-  # executed synchronously, so the result of the block will be returned to nvim.
+
   plug.command(:InsertLeftBracket, :nargs => 0, :sync => true) do |client|
     buffer = client.get_current_buf
     caret = client.get_current_line
@@ -15,6 +14,6 @@ Neovim.plugin do |plug|
   end
 
   plug.autocmd(:BufEnter, :pattern => "*.m") do |nvim|
-    nvim.command("inoremap ] <ESC>:InsertLeftBracket<CR>")
+    nvim.command("inoremap ] <C-O>:InsertLeftBracket<CR>")
   end
 end
