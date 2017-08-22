@@ -282,7 +282,7 @@ class BracketAdder
 
     lexer.each do |token| 
       tokenList << A.new(*(token<<offset)) unless [:whitespace,:terminator].include? token[0]
-      offset +=token[1].length
+      offset += token[1]? token[1].length : 1
     end
     if tokenList.empty?
       res = e_sn(line[0..caret_placement])+"]$0"+e_sn(line[caret_placement+1..-1])
@@ -400,6 +400,10 @@ if __FILE__ == $PROGRAM_NAME
 
   line = "return a b"
   caret_placement = 10
+  puts adder.add_missing_bracket(line, caret_placement)
+
+  line = "a b\\"
+  caret_placement = 4
   puts adder.add_missing_bracket(line, caret_placement)
 
 end
