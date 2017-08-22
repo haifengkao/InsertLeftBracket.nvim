@@ -1,11 +1,5 @@
-#require "neovim"
-#client = Neovim.attach_unix("/tmp/nvim.sock")
-#buffer = client.get_current_buf
-require "./CurrentLine.rb"
-require "./BracketAdder.rb"
-
-require "neovim"
-client = Neovim.attach_unix("/tmp/nvim.sock")
+require_relative "CurrentLine.rb"
+require_relative "BracketAdder.rb"
 
 class Point
 
@@ -16,7 +10,7 @@ class Point
     end
 end
 
-class InsertLeftBracket
+class LeftBracketAdder
 
   def initialize(buffer, line_number, caret)
     complete = CompleteLine.new
@@ -92,8 +86,9 @@ class InsertLeftBracket
   end
 end
 
-
 if __FILE__ == $PROGRAM_NAME
+  require "neovim"
+  client = Neovim.attach_unix("/tmp/nvim.sock")
 
   # SETUP: start nvim in another terminal by "NVIM_LISTEN_ADDRESS=/tmp/nvim.sock nvim"
   # then run this script to test
@@ -101,23 +96,23 @@ if __FILE__ == $PROGRAM_NAME
   # nvim buffer is 1-index
   buffer = [0, "aa bb;"]
   caret = 4
-  insert = InsertLeftBracket.new(buffer, buffer.length - 1, caret)
+  insert = LeftBracketAdder.new(buffer, buffer.length - 1, caret)
   puts insert.get_inserted_line()
 
   buffer = [0, "b ", "a ; ", "{aa ;}bb", "cc dd;"]
   caret = 4
-  insert = InsertLeftBracket.new(buffer, buffer.length - 1, caret)
+  insert = LeftBracketAdder.new(buffer, buffer.length - 1, caret)
   puts insert.get_inserted_line()
 
   buffer = [0, "[a b]", ""]
   caret = 0
-  insert = InsertLeftBracket.new(buffer, buffer.length - 1, caret)
+  insert = LeftBracketAdder.new(buffer, buffer.length - 1, caret)
   puts insert.apply_inserted_line()
   puts insert.buffer
 
   #buffer = [0, "; a b"]
   #caret = 5
-  #insert = InsertLeftBracket.new(buffer, buffer.length - 1, caret)
+  #insert = LeftBracketAdder.new(buffer, buffer.length - 1, caret)
   #puts insert.apply_inserted_line()
   #puts insert.buffer
 
@@ -128,7 +123,7 @@ if __FILE__ == $PROGRAM_NAME
   line_num = buffer.line_number
   puts "cursor", [y, x]
   puts "totoal line",line_num
-  insert = InsertLeftBracket.new(buffer, line_num, x)
+  insert = LeftBracketAdder.new(buffer, line_num, x)
   puts buffer.lines
   new_x = insert.apply_inserted_line()
   window.cursor = [y, new_x]
