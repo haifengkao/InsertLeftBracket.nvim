@@ -1,3 +1,5 @@
+require "stringio"
+
 class Lexer
   include Enumerable
   def initialize
@@ -323,7 +325,6 @@ class BracketAdder
 end
 
 if __FILE__ == $PROGRAM_NAME
-  require "stringio"
   adder = BracketAdder.new
 
   line = "aa bb;"
